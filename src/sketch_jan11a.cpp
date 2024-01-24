@@ -1,4 +1,8 @@
 #include <Arduino.h>
+#include <DS18B20.h>
+#include <Wire.h>
+#include <paj7620.h>
+
 
 // WiFiWeatherStation.ino
 #include "Arduino_LED_Matrix.h"
@@ -6,8 +10,9 @@
 
 ArduinoLEDMatrix matrix;
 
+#define ONE_WIRE_BUS 2
 
-
+DS18B20 ds(ONE_WIRE_BUS);
 
 #include "WiFiS3.h"
 #include <Arduino_JSON.h>
@@ -143,8 +148,21 @@ void setup() {
   }
 
 
+  // init the PAJ7620 hand gesture sensor
+  short error = paj7620Init();
+  if (error) {
+    Serial.print("sensor error 0x");
+    Serial.println(error, HEX);
+    for (;;);
+  }
+
+  // select the attached DS18B20 one-wire temperature sensor
+  ds.selectNext();
+
+  // initialize the LED matrix
   matrix.begin();
 
+  // set the clock animation whiel we wait for the WiFi to connect
   matrix.loadFrame(clock_animation[0]);
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -175,13 +193,40 @@ void setup() {
 
 /* -------------------------------------------------------------------------- */
 void loop() {
-  // if there's incoming data from the net connection.
-  // send it out the serial port.  This is for debugging
-  // purposes only:
-  read_response();
-  // if ten seconds have passed since your last connection,
-  // then connect again and send data:
-  if (millis() - lastConnectionTime > postingInterval) {
-    http_request();
+  // for hand gesture sensor
+  uint8_t handData = 0;
+
+  bool outsideTemperature = true;
+
+  // read the hand gesture sensor
+  paj7620ReadReg(0x43, 1, &handData); // Read Bank_0_Reg_0x43/0x44 for gesture result.
+  if (handData == GES_LEFT_FLAG) {
+    outsideTemperature = !outsideTemperature;
+    Serial.println("Forward");
+  } else if (handData == GES_RIGHT_FLAG) {
+    outsideTemperature = !outsideTemperature;
+    Serial.println("Backward");
+  } else {
+    paj7620ReadReg(0x44, 1, &handData); //wave is stored in another register
+    if (handData == GES_WAVE_FLAG) {
+      outsideTemperature = !outsideTemperature;
+      Serial.println("wave");
+    }
+  }
+
+  if (outsideTemperature) { 
+    // if there's incoming data from the net connection.
+    // send it out the serial port.  This is for debugging
+    // purposes only:
+    read_response();
+    // if ten seconds have passed since your last connection,
+    // then connect again and send data:
+    if (millis() - lastConnectionTime > postingInterval) {
+      http_request();
+    }
+  } else {
+    // cast float to int and write ds.getTeampC() to LEDs
+    displayDec((int)ds.getTempC());
+    delay(30000);
   }
 }
