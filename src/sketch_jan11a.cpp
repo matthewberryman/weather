@@ -1,10 +1,16 @@
+/* 
+  * Based on the Arduino UNO R4 WIFI - Remote Weather Station Demo
+  * https://community.element14.com/products/arduino/arduino-projects/b/blog/posts/arduino-uno-r4-wifi---remote-weather-station-demo
+  * 
+  * Added a DS18B20 temperature sensor and a PAJ7620 hand gesture sensor to the demo
+  * Any hand gesture will switch between the outside temperature and the inside temperature
+*/
+
 #include <Arduino.h>
 #include <DS18B20.h>
 #include <Wire.h>
 #include <paj7620.h>
 
-
-// WiFiWeatherStation.ino
 #include "Arduino_LED_Matrix.h"
 #include "numbers.h"
 
