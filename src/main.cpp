@@ -4,6 +4,18 @@
   *
   * Added a DS18B20 temperature sensor and a PAJ7620 hand gesture sensor to the demo
   * Any hand gesture will switch between the outside temperature and the inside temperature
+  *
+  * The DS18B20 is connected as follows:
+  * VCC - 5V
+  * GND - GND
+  * S - D2
+  *
+  * The PAJ7620 is connected as follows:
+  * VCC - 5V
+  * GND - GND
+  * SDA - A4
+  * SCL - A5
+  * INT - D3
 */
 
 #include <Arduino.h>
