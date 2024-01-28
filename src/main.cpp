@@ -247,4 +247,7 @@ void loop() {
     // cast float to int and write ds.getTeampC() to LEDs
     displayDec((int)ds.getTempC());
   }
+
+  // wait a bit before reading again
+  delay(100);
 }
