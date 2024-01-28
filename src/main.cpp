@@ -48,6 +48,8 @@ char ssid[] = SECRET_SSID;  // your network SSID (name)
 char pass[] = SECRET_PASS;  // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;           // your network key index number (needed only for WEP)
 
+bool outsideTemperature = false;
+
 int status = WL_IDLE_STATUS;
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
@@ -214,10 +216,9 @@ void loop() {
   // for hand gesture sensor
   uint8_t handData = 0;
 
-  bool outsideTemperature = true;
-
   // read the hand gesture sensor
   paj7620ReadReg(0x43, 1, &handData); // Read Bank_0_Reg_0x43/0x44 for gesture result.
+
   if (handData == GES_LEFT_FLAG) {
     outsideTemperature = !outsideTemperature;
     Serial.println("Forward");
@@ -245,6 +246,5 @@ void loop() {
   } else {
     // cast float to int and write ds.getTeampC() to LEDs
     displayDec((int)ds.getTempC());
-    delay(30000);
   }
 }
